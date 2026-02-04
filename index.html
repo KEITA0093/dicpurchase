@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>購買シミュレーションMobile</title>
+    <title>調達戦略ゲーム Mobile</title>
     <style>
         /* --- モバイル最適化CSS --- */
         :root {
@@ -59,7 +59,17 @@
             display: flex;
             align-items: center;
         }
-        .news-icon { margin-right: 8px; font-size: 1.2rem; }
+        /* 変更: アイコンではなくラベルデザインに */
+        .news-label {
+            background: #856404;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
 
         /* ステータスダッシュボード（2列グリッド） */
         .dashboard {
@@ -95,7 +105,12 @@
             animation: flash 1s; 
             border-color: #f1c40f; 
         }
+        .supplier-card.price-drop {
+            animation: bounce 0.5s;
+            border-color: #e74c3c;
+        }
         @keyframes flash { 0% { opacity:0; transform:scale(0.9); } 100% { opacity:1; transform:scale(1); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         
         .card-header {
             display: flex;
@@ -111,6 +126,8 @@
             font-size: 0.8rem; 
             font-weight: bold;
         }
+        /* 値下げ強調用 */
+        .cost-down { color: #e74c3c; background: #fadbd8; }
 
         .specs {
             display: flex;
@@ -227,7 +244,7 @@
 <body>
 
 <header>
-    <h1>購買シミュレーション</h1>
+    <h1>調達戦略ゲーム</h1>
     <span class="subtitle">Mobile Edition</span>
 </header>
 
@@ -235,7 +252,7 @@
     
     <!-- ニュース -->
     <div class="news-ticker">
-        <span class="news-icon">📰</span>
+        <span class="news-label">MARKET NEWS</span>
         <span id="newsText">市場分析中...</span>
     </div>
 
@@ -311,28 +328,32 @@ document.addEventListener('DOMContentLoaded', function() {
             baseCost: 7.5, currentCost: 7.5, 
             risk: 25, quality: 80,
             desc: "低コストだがリスク高",
-            allocation: 0, hidden: false, disabled: false
+            allocation: 0, hidden: false, disabled: false,
+            isPriceDrop: false
         },
         { 
             id: 'B', name: "B社 (国内老舗)", 
             baseCost: 13.0, currentCost: 13.0, 
             risk: 2, quality: 99,
             desc: "高コストだが超安定",
-            allocation: 0, hidden: false, disabled: false
+            allocation: 0, hidden: false, disabled: false,
+            isPriceDrop: false
         },
         { 
             id: 'C', name: "C社 (中堅)", 
             baseCost: 10.5, currentCost: 10.5, 
             risk: 10, quality: 90,
             desc: "バランス型",
-            allocation: 0, hidden: false, disabled: false
+            allocation: 0, hidden: false, disabled: false,
+            isPriceDrop: false
         },
         { 
             id: 'D', name: "D社 (黒船)", 
             baseCost: 8.5, currentCost: 8.5, 
             risk: 5, quality: 95, 
             desc: "【新規】高性能・低価格",
-            allocation: 0, hidden: true, disabled: false 
+            allocation: 0, hidden: true, disabled: false,
+            isPriceDrop: false
         }
     ];
 
@@ -365,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 需要変動 (80~120)
         state.currentDemand = Math.floor(Math.random() * 41) + 80;
         
-        // D社参入判定
+        // D社参入判定 (7ヶ月目)
         if (state.turn === 7) {
             suppliers.find(s => s.id === 'D').hidden = false;
             alert("📢 新規サプライヤー「D社」が参入！\n高性能・低価格のようです。");
@@ -390,9 +411,47 @@ document.addEventListener('DOMContentLoaded', function() {
             if(!s.hidden) s.currentCost += 0.1; // 毎月微増
             s.allocation = 0;
             s.disabled = false;
+            s.isPriceDrop = false; // フラグリセット
         });
 
-        // ニュース発生 (30%)
+        // --- バランス調整: 8ヶ月目の価格競争 ---
+        if (state.turn === 8) {
+            let dCost = suppliers.find(s => s.id === 'D').currentCost;
+            
+            suppliers.forEach(s => {
+                // インフレ分の加算を考慮した上で、D社基準で価格を再設定
+                if (s.id === 'A') {
+                    s.currentCost = Math.max(3, dCost - 1.2); // A社はD社より明確に安く
+                    s.isPriceDrop = true;
+                }
+                if (s.id === 'B') {
+                    s.currentCost = dCost + 2.2; // B社はD社+2.2万まで接近 (元はD社+4.5万程度)
+                    s.isPriceDrop = true;
+                }
+                if (s.id === 'C') {
+                    s.currentCost = dCost + 0.5; // C社はD社とほぼ同等へ
+                    s.isPriceDrop = true;
+                }
+            });
+
+            let msg = "📉 既存3社がD社に対抗して大幅値下げ！価格競争へ突入。";
+            document.getElementById('newsText').innerText = msg;
+            addLog(`[NEWS] ${msg}`, "#f1c40f");
+            return;
+        }
+        // ---------------------------------------
+
+        // --- バランス調整: 10ヶ月目のD社供給制限 ---
+        if (state.turn === 10) {
+            let msg = "⚠ 【緊急】D社が受注殺到により出荷制限を開始（最大40%まで）。";
+            document.getElementById('newsText').innerText = msg;
+            addLog(`[NEWS] ${msg}`, "#e74c3c");
+            // このターンも他のランダムニュースは発生させない
+            return;
+        }
+        // ---------------------------------------
+
+        // ニュース発生 (30%) - 8,10ターン目以外
         if (state.turn > 1 && Math.random() < 0.3) {
             let ev = events[Math.floor(Math.random() * events.length)];
             document.getElementById('newsText').innerText = ev.text;
@@ -412,14 +471,27 @@ document.addEventListener('DOMContentLoaded', function() {
             let card = document.createElement('div');
             card.className = 'supplier-card';
             if (s.id === 'D' && state.turn === 7) card.classList.add('new-entry');
+            if (s.isPriceDrop) card.classList.add('price-drop'); // 値下げエフェクト
             if (s.allocation > 0) card.classList.add('active');
+
+            // 値下げ時は価格表示を赤くする
+            let costClass = s.isPriceDrop ? 'supplier-cost cost-down' : 'supplier-cost';
+            let costText = s.currentCost.toFixed(1) + '万円';
+            if (s.isPriceDrop) costText += ' ⬇';
+
+            // D社制限時の警告追加
+            let warningText = "";
+            if (s.id === 'D' && state.turn >= 10) {
+                warningText = `<div style="color:#e74c3c; font-size:0.75rem; margin-top:5px;">⚠ 出荷制限中 (最大40%)</div>`;
+            }
 
             card.innerHTML = `
                 <div class="card-header">
                     <span class="supplier-name">${s.name}</span>
-                    <span class="supplier-cost">${s.currentCost.toFixed(1)}万円</span>
+                    <span class="${costClass}">${costText}</span>
                 </div>
                 <div style="font-size:0.8rem; color:#777; margin-bottom:8px;">${s.desc}</div>
+                ${warningText}
                 
                 <div class="specs">
                     <span class="spec-item">リスク: <b>${s.risk}%</b></span>
@@ -444,10 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let s = suppliers.find(sup => sup.id === id);
         s.allocation = parseInt(value);
         document.getElementById(`val-${id}`).innerText = value + "%";
-        
-        // カードのアクティブ表示切替
-        // 再描画するとスライダー操作が途切れるのでクラス操作のみ
-        // (簡易実装のため親要素探索等は省略)
         
         checkAllocationTotal();
     };
@@ -485,15 +553,31 @@ document.addEventListener('DOMContentLoaded', function() {
             if (s.hidden || s.allocation === 0) return;
 
             let orderQty = Math.round(state.currentDemand * (s.allocation / 100));
-            let cost = s.currentCost * orderQty;
-            let delivered = orderQty;
             let trouble = [];
 
-            // リスク判定
+            // --- 10ヶ月目以降: D社の供給制限 (40% Cap) ---
+            if (s.id === 'D' && state.turn >= 10) {
+                // 配分率が40%を超えている場合のみ、厳密に個数制限を適用
+                // (40%設定時の端数切り上げによる微細な超過は許容する)
+                if (s.allocation > 40) {
+                    let maxAllowed = Math.floor(state.currentDemand * 0.4);
+                    if (orderQty > maxAllowed) {
+                        let cut = orderQty - maxAllowed;
+                        trouble.push(`<span style="color:#e74c3c">供給制限! カット-${cut}</span>`);
+                        orderQty = maxAllowed; 
+                    }
+                }
+            }
+            // ------------------------------------------------
+
+            let cost = s.currentCost * orderQty;
+            let delivered = orderQty;
+
+            // リスク判定 (通常の配送事故)
             if (Math.random() * 100 < s.risk) {
                 let lost = Math.floor(orderQty * (Math.random() * 0.8 + 0.2)); 
                 delivered -= lost;
-                trouble.push(`<span style="color:#e74c3c">未納${lost}</span>`);
+                trouble.push(`<span style="color:#e74c3c">配送事故-${lost}</span>`);
                 weightedReputationDamage += 10;
             }
 
@@ -518,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let salesUnits = Math.min(deliveredTotal, state.currentDemand);
         let revenue = salesUnits * REVENUE_UNIT_PRICE;
         
-        // 欠品ペナルティ
+        // 欠品ペナルティ (D社の制限や事故で足りなかった分)
         if (salesUnits < state.currentDemand) {
             let miss = state.currentDemand - salesUnits;
             logDetails += `<div style="color:#e74c3c; font-weight:bold;">⚠ 欠品: ${miss}個 (機会損失)</div>`;
