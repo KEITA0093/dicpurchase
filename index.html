@@ -14,6 +14,7 @@
             --text: #333;
             --danger: #e74c3c;
             --success: #2ecc71;
+            --modal-bg: rgba(44, 62, 80, 0.9);
         }
 
         body {
@@ -22,7 +23,7 @@
             color: var(--text);
             margin: 0;
             padding: 0;
-            padding-bottom: 90px; /* 下部固定ボタンのスペース確保 */
+            padding-bottom: 90px;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -59,7 +60,6 @@
             display: flex;
             align-items: center;
         }
-        /* 変更: アイコンではなくラベルデザインに */
         .news-label {
             background: #856404;
             color: #fff;
@@ -71,7 +71,7 @@
             white-space: nowrap;
         }
 
-        /* ステータスダッシュボード（2列グリッド） */
+        /* ステータスダッシュボード */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -101,143 +101,79 @@
             position: relative;
         }
         .supplier-card.active { border-color: var(--primary); }
-        .supplier-card.new-entry { 
-            animation: flash 1s; 
-            border-color: #f1c40f; 
+        .supplier-card.new-entry { border-color: #f1c40f; }
+        .supplier-card.price-drop { border-color: #e74c3c; }
+        .supplier-card.disabled { 
+            background: #e0e0e0; 
+            opacity: 0.6; 
+            border-color: #999;
         }
-        .supplier-card.price-drop {
-            animation: bounce 0.5s;
-            border-color: #e74c3c;
-        }
-        @keyframes flash { 0% { opacity:0; transform:scale(0.9); } 100% { opacity:1; transform:scale(1); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .supplier-name { font-weight: bold; font-size: 1.1rem; }
-        .supplier-cost { 
-            background: #ecf0f1; 
-            padding: 3px 8px; 
-            border-radius: 12px; 
-            font-size: 0.8rem; 
-            font-weight: bold;
-        }
-        /* 値下げ強調用 */
+        .supplier-cost { background: #ecf0f1; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
         .cost-down { color: #e74c3c; background: #fadbd8; }
-
-        .specs {
-            display: flex;
-            gap: 15px;
-            font-size: 0.85rem;
-            color: #555;
-            margin-bottom: 10px;
-        }
+        
+        .specs { display: flex; gap: 15px; font-size: 0.85rem; color: #555; margin-bottom: 10px; }
         .spec-item b { color: #333; }
 
-        /* スライダー周り */
-        .slider-container {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
+        .slider-container { background: #f8f9fa; border-radius: 8px; padding: 10px; }
+        .slider-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
         .percent-val { font-weight: bold; color: var(--primary); }
         
-        /* カスタムスライダー */
-        input[type=range] {
-            width: 100%;
-            -webkit-appearance: none;
-            height: 6px;
-            background: #ddd;
-            border-radius: 3px;
-            outline: none;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
-            background: var(--primary);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        input[type=range] { width: 100%; -webkit-appearance: none; height: 6px; background: #ddd; border-radius: 3px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--primary); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input[type=range]:disabled::-webkit-slider-thumb { background: #999; cursor: not-allowed; }
 
-        /* 下部固定エリア */
+        /* スライダー補助ボタン */
+        .adj-controls { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .adj-btn { background: #ecf0f1; border: 1px solid #bdc3c7; color: var(--primary); width: 32px; height: 32px; border-radius: 4px; font-size: 1.2rem; font-weight: bold; display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; padding: 0; }
+        .adj-btn:active { background: #bdc3c7; }
+        .adj-btn-max { background: var(--accent); color: white; border: none; height: 32px; padding: 0 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+        .adj-btn:disabled, .adj-btn-max:disabled { background: #e0e0e0; color: #999; border-color: #ccc; cursor: not-allowed; }
+
+        /* 下部固定アクションバー */
         .bottom-action-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: white;
-            padding: 15px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            box-sizing: border-box;
-            z-index: 100;
+            position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 5px; box-sizing: border-box; z-index: 100;
         }
-        
-        .total-indicator {
-            text-align: center;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
+        .total-indicator { text-align: center; font-size: 0.9rem; margin-bottom: 5px; }
         .total-ok { color: var(--success); font-weight: bold; }
         .total-ng { color: var(--danger); font-weight: bold; }
 
-        .btn-main {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-main:disabled { background: #bdc3c7; }
         .btn-main:active { transform: scale(0.98); }
 
         /* ログエリア */
-        .log-area {
-            background: #34495e;
-            color: #ecf0f1;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            max-height: 150px;
-            overflow-y: auto;
-            margin-top: 20px;
-        }
+        .log-area { background: #34495e; color: #ecf0f1; padding: 10px; border-radius: 8px; font-size: 0.8rem; max-height: 150px; overflow-y: auto; margin-top: 20px; }
         .log-entry { padding: 4px 0; border-bottom: 1px solid #455a64; }
 
-        /* 結果画面 */
+        /* モーダル全般 */
+        .turn-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg);
+            z-index: 300; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
+        }
+        .turn-modal {
+            background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center;
+        }
+        .turn-modal h2 { margin-top: 0; color: var(--primary); font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .turn-modal .message { font-size: 1rem; line-height: 1.6; color: #444; margin: 20px 0; text-align: left; }
+        
         .result-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.98);
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            text-align: center;
-            box-sizing: border-box;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98);
+            z-index: 400; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; box-sizing: border-box;
         }
         .hidden { display: none !important; }
+
+        /* 月次決算用テーブル */
+        .result-table { width: 100%; text-align: left; font-size: 1.05rem; border-collapse: collapse; }
+        .result-table td { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .result-table tr:last-child td { border-bottom: none; font-weight: bold; font-size: 1.2rem; padding-top: 15px; border-top: 2px solid #ccc; }
+        .val-plus { text-align: right; color: #2980b9; font-weight: bold; }
+        .val-minus { text-align: right; color: #e74c3c; font-weight: bold; }
+        .val-total { text-align: right; }
 
     </style>
 </head>
@@ -249,14 +185,11 @@
 </header>
 
 <div class="container" id="gameScreen">
-    
-    <!-- ニュース -->
     <div class="news-ticker">
         <span class="news-label">MARKET NEWS</span>
         <span id="newsText">市場分析中...</span>
     </div>
 
-    <!-- ステータスダッシュボード -->
     <div class="dashboard">
         <div class="status-card">
             <div class="status-label">📅 月数</div>
@@ -274,27 +207,19 @@
             <div class="status-label">🤝 信用スコア</div>
             <div class="status-value" id="reputationDisplay">100</div>
         </div>
-        <!-- 固定費表示 -->
         <div class="status-card" style="grid-column: span 2; background:#ffebee;">
             <div class="status-label" style="color:#c62828;">📉 毎月の固定費</div>
-            <div class="status-value" style="color:#c62828;">-450万円</div>
+            <div class="status-value" style="color:#c62828;">-300万円</div>
         </div>
     </div>
 
     <h3 style="font-size:1rem; margin-bottom:10px; color:#555;">発注配分を設定 (合計100%)</h3>
+    <div id="supplierList"></div>
 
-    <!-- サプライヤーリスト -->
-    <div id="supplierList">
-        <!-- JSで生成 -->
-    </div>
-
-    <!-- ログ -->
     <div style="margin-top:20px; font-weight:bold; font-size:0.9rem;">📋 履歴</div>
     <div class="log-area" id="logArea"></div>
-
 </div>
 
-<!-- 下部固定アクションバー -->
 <div class="bottom-action-bar" id="actionBar">
     <div class="total-indicator">
         配分合計: <span id="totalAllocationDisplay">0%</span>
@@ -303,74 +228,79 @@
     <button class="btn-main" id="actionBtn" disabled>発注を実行</button>
 </div>
 
+<!-- イントロ（ゲーム説明）モーダル -->
+<div class="turn-overlay" id="introOverlay">
+    <div class="turn-modal" style="max-height: 90vh; overflow-y: auto;">
+        <h2 style="color:var(--primary); font-size:1.3rem;">🏭 調達戦略ゲーム</h2>
+        <div class="message" style="font-size:0.95rem;">
+            <p>あなたは製造企業の<b>購買担当</b>です。<br>今後12ヶ月間、工場の原料調達を任されました。</p>
+            <p style="font-weight:bold; color:var(--accent); margin-top:15px; border-bottom:1px solid #ddd; padding-bottom:5px;">🎯 目標</p>
+            <p>12ヶ月間工場を稼働させ、<b>「資金（利益）」</b>と<b>「信用スコア」</b>を最大化してください。</p>
+            <p style="font-weight:bold; color:var(--accent); margin-top:15px; border-bottom:1px solid #ddd; padding-bottom:5px;">📜 ルール</p>
+            <ul style="text-align:left; padding-left:20px; margin-top:5px; color:#444;">
+                <li style="margin-bottom:8px;">毎月、需要予測に基づき各サプライヤーへの<b>発注配分（計100%）</b>を決定します。</li>
+                <li style="margin-bottom:8px;">各社には「納期遅延リスク」や「不良品率」があります。</li>
+                <li style="margin-bottom:8px;">毎月必ず<b>固定費(-300万円)</b>がかかります。高い業者ばかり選ぶと赤字倒産します。</li>
+                <li>他部署からの要望や市場ニュースにも柔軟に対応してください！</li>
+            </ul>
+        </div>
+        <button class="btn-main" style="margin-top:10px;" onclick="closeIntroAndStart()">業務を開始する</button>
+    </div>
+</div>
+
+<!-- ターン開始モーダル -->
+<div class="turn-overlay hidden" id="turnOverlay">
+    <div class="turn-modal">
+        <h2 id="turnModalTitle">1ヶ月目 開始</h2>
+        <div class="message" id="turnModalBody">
+            <!-- JSでメッセージ挿入 -->
+        </div>
+        <button class="btn-main" onclick="startTurn()">確認して発注へ</button>
+    </div>
+</div>
+
+<!-- 月次決算報告モーダル -->
+<div class="turn-overlay hidden" id="monthResultOverlay">
+    <div class="turn-modal">
+        <h2 id="monthResultTitle">〇ヶ月目 決算報告</h2>
+        <div class="message" id="monthResultBody" style="margin-bottom: 10px;">
+            <!-- JSでテーブル挿入 -->
+        </div>
+        <button class="btn-main" onclick="closeMonthResult()">次へ進む</button>
+    </div>
+</div>
+
 <!-- 結果画面 -->
 <div class="result-overlay hidden" id="resultScreen">
     <h2 style="color:var(--primary);">年間決算報告</h2>
     <div style="font-size:4rem; font-weight:bold; color:var(--accent);" id="finalScore">0</div>
     <p style="color:#777;">最終スコア</p>
-    
     <div id="feedbackText" style="background:#f4f7f6; padding:15px; border-radius:10px; margin:20px 0; width:100%; text-align:left; font-size:0.95rem;"></div>
-    
     <button class="btn-main" onclick="location.reload()">もう一度遊ぶ</button>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // === 設定 ===
     const MAX_TURNS = 12;
     const REVENUE_UNIT_PRICE = 18; 
-    const FIXED_COST = 450;        
+    const FIXED_COST = 300;        
 
-    // サプライヤー初期設定
     let suppliers = [
-        { 
-            id: 'A', name: "A社 (海外)", 
-            baseCost: 7.5, currentCost: 7.5, 
-            risk: 25, quality: 80,
-            desc: "低コストだがリスク高",
-            allocation: 0, hidden: false, disabled: false,
-            isPriceDrop: false
-        },
-        { 
-            id: 'B', name: "B社 (国内老舗)", 
-            baseCost: 13.0, currentCost: 13.0, 
-            risk: 2, quality: 99,
-            desc: "高コストだが超安定",
-            allocation: 0, hidden: false, disabled: false,
-            isPriceDrop: false
-        },
-        { 
-            id: 'C', name: "C社 (中堅)", 
-            baseCost: 10.5, currentCost: 10.5, 
-            risk: 10, quality: 90,
-            desc: "バランス型",
-            allocation: 0, hidden: false, disabled: false,
-            isPriceDrop: false
-        },
-        { 
-            id: 'D', name: "D社 (黒船)", 
-            baseCost: 8.5, currentCost: 8.5, 
-            risk: 5, quality: 95, 
-            desc: "【新規】高性能・低価格",
-            allocation: 0, hidden: true, disabled: false,
-            isPriceDrop: false
-        }
+        { id: 'A', name: "A社 (インドメーカー)", baseCost: 7.5, currentCost: 7.5, risk: 25, defectRate: 20, desc: "低コストだが納期遅延リスク高", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'B', name: "B社 (国内大手メーカー)", baseCost: 13.0, currentCost: 13.0, risk: 2, defectRate: 1, desc: "高コストだが超安定", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'C', name: "C社 (中国メーカー)", baseCost: 10.5, currentCost: 10.5, risk: 10, defectRate: 10, desc: "バランス型", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'D', name: "D社 (黒船)", baseCost: 8.5, currentCost: 8.5, risk: 5, defectRate: 5, desc: "【新規】低不良品率・低価格", allocation: 0, hidden: true, disabled: false, isPriceDrop: false }
     ];
 
     let state = {
-        turn: 1,
-        money: 2000,
-        reputation: 100,
-        currentDemand: 100
+        turn: 1, money: 2000, reputation: 100, currentDemand: 100
     };
 
-    // ニュースイベント
-    const events = [
+    const randomEvents = [
         { text: "市場は安定。", func: () => {} },
-        { text: "⚡ 円安進行！A社のコスト増", func: (s) => { if(s.id==='A') s.currentCost += 3.0; } },
-        { text: "🔥 国内物流混乱。B社のリスク増", func: (s) => { if(s.id==='B') s.risk += 20; } },
-        { text: "📉 原油安。全社コスト微減", func: (s) => { s.currentCost -= 0.5; } },
-        { text: "⚠ A社ストライキ。リスク倍増", func: (s) => { if(s.id==='A') s.risk *= 2; } }
+        { text: "⚡ 円安進行！海外(A・C社)のコスト増", func: (s) => { if(s.id==='A') s.currentCost += 3.0; if(s.id==='C') s.currentCost += 2.0; } },
+        { text: "🔥 国内物流混乱。B社の納期遅延リスク増", func: (s) => { if(s.id==='B') s.risk += 20; } },
+        { text: "📉 原油安。全社コスト微減", func: (s) => { s.currentCost -= 0.5; } }
     ];
 
     const supplierListEl = document.getElementById('supplierList');
@@ -378,88 +308,98 @@ document.addEventListener('DOMContentLoaded', function() {
     const actionBtn = document.getElementById('actionBtn');
     const logAreaEl = document.getElementById('logArea');
     const errorMsgEl = document.getElementById('errorMsg');
+    const turnOverlay = document.getElementById('turnOverlay');
+    const introOverlay = document.getElementById('introOverlay');
+    const monthResultOverlay = document.getElementById('monthResultOverlay');
 
-    // ゲーム開始
-    initTurn();
+    // イントロを閉じて1ヶ月目のモーダルを開く
+    window.closeIntroAndStart = function() {
+        introOverlay.classList.add('hidden');
+        showTurnModal();
+    };
 
-    function initTurn() {
-        // 需要変動 (80~120)
-        state.currentDemand = Math.floor(Math.random() * 41) + 80;
+    // 毎月の月初処理（モーダル表示）
+    function showTurnModal() {
+        // 変数・状態リセット
+        suppliers.forEach(s => {
+            if(!s.hidden && state.turn !== 8) s.currentCost += 0.1; // 8月以外インフレ
+            s.allocation = 0;
+            s.disabled = false;
+            s.isPriceDrop = false;
+        });
+
+        // 基本の需要計算
+        state.currentDemand = Math.floor(Math.random() * 41) + 80; // 80~120
         
-        // D社参入判定 (7ヶ月目)
-        if (state.turn === 7) {
+        let modalTitle = `📅 ${state.turn} ヶ月目 開始`;
+        let modalText = `今月の基本的な需要予測は <b>${state.currentDemand}個</b> です。<br><br>発注配分を決定してください。`;
+        let newsTextForTicker = "特になし";
+        let applyRandomNews = true;
+
+        // --- シナリオ（固定イベント）の判定 ---
+        if (state.turn === 3) {
+            state.currentDemand = Math.floor(Math.random() * 31) + 150; // 150-180
+            modalTitle = "🏃‍♂️ 営業部より：新規案件獲得！";
+            modalText = `大口顧客のコンペに勝利しました！キャンペーンも重なり、今月の需要が <b>${state.currentDemand}個</b> に急増します。<br><br><span style="color:#e74c3c; font-weight:bold;">「絶対に欠品させないでください！」</span>`;
+            newsTextForTicker = "営業部が大型案件獲得（需要急増）";
+            applyRandomNews = false;
+        } 
+        else if (state.turn === 5) {
+            suppliers.find(s => s.id === 'A').disabled = true;
+            modalTitle = "📐 品証部より：4M変更縛り";
+            modalText = `顧客側の4M（人・機械・材料・方法）変更承認が遅れています。<br><br><span style="color:#e74c3c; font-weight:bold;">未承認の【A社】への発注は今月全面ストップ</span>し、既存のB社・C社のみで対応してください。`;
+            newsTextForTicker = "4M変更承認遅れ。A社使用不可";
+            applyRandomNews = false;
+        }
+        else if (state.turn === 7) {
             suppliers.find(s => s.id === 'D').hidden = false;
-            alert("📢 新規サプライヤー「D社」が参入！\n高性能・低価格のようです。");
-            addLog("📢 【特報】新規サプライヤー「D社」参入！", "#f1c40f");
+            modalTitle = "🚢 購買部：黒船サプライヤー参入";
+            modalText = `低不良品率・低価格を謳う新規サプライヤー<b>「D社」</b>が取引を打診してきました。今月から発注ポートフォリオに組み込み可能です。`;
+            newsTextForTicker = "新規サプライヤー「D社」参入";
+            applyRandomNews = false;
+        }
+        else if (state.turn === 8) {
+            let dCost = suppliers.find(s => s.id === 'D').currentCost;
+            suppliers.forEach(s => {
+                if (s.id === 'A') { s.currentCost = Math.max(3, dCost - 1.2); s.isPriceDrop = true; }
+                if (s.id === 'B') { s.currentCost = dCost + 2.2; s.isPriceDrop = true; }
+                if (s.id === 'C') { s.currentCost = dCost + 0.5; s.isPriceDrop = true; }
+            });
+            modalTitle = "📉 市場動向：熾烈な価格競争";
+            modalText = `D社の参入に危機感を覚えた既存3社（A・B・C社）が、一斉に<b>大幅な値下げ</b>を実施しました！ポートフォリオを見直すチャンスです。`;
+            newsTextForTicker = "既存3社がD社に対抗し大幅値下げ";
+            applyRandomNews = false;
+        }
+        else if (state.turn === 10) {
+            modalTitle = "⚠ 緊急：D社の供給制限";
+            modalText = `D社に注文が殺到し、キャパオーバーに陥りました。<br><br><span style="color:#e74c3c; font-weight:bold;">今月以降、D社への発注は【需要の40%】が上限</span>となります。超過分は未納カットされます。`;
+            newsTextForTicker = "D社が供給制限を開始（上限40%）";
+            applyRandomNews = false;
         }
 
-        // イベント処理
-        handleEvents();
+        // --- ランダムニュースの処理 ---
+        if (applyRandomNews && state.turn > 1 && Math.random() < 0.3) {
+            let ev = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+            newsTextForTicker = ev.text;
+            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>${ev.text}</div>`;
+            suppliers.forEach(s => ev.func(s));
+        }
+
+        // モーダルへテキストセット
+        document.getElementById('turnModalTitle').innerText = modalTitle;
+        document.getElementById('turnModalBody').innerHTML = modalText;
+        document.getElementById('newsText').innerText = newsTextForTicker;
         
-        // 描画
+        turnOverlay.classList.remove('hidden');
+    }
+
+    // モーダルの「確認ボタン」から呼ばれる
+    window.startTurn = function() {
+        turnOverlay.classList.add('hidden');
         updateDashboard();
         renderSuppliers();
         checkAllocationTotal();
-        
-        // ログエリアを一番上に戻す
         logAreaEl.scrollTop = 0;
-    }
-
-    function handleEvents() {
-        // インフレ & リセット
-        suppliers.forEach(s => {
-            if(!s.hidden) s.currentCost += 0.1; // 毎月微増
-            s.allocation = 0;
-            s.disabled = false;
-            s.isPriceDrop = false; // フラグリセット
-        });
-
-        // --- バランス調整: 8ヶ月目の価格競争 ---
-        if (state.turn === 8) {
-            let dCost = suppliers.find(s => s.id === 'D').currentCost;
-            
-            suppliers.forEach(s => {
-                // インフレ分の加算を考慮した上で、D社基準で価格を再設定
-                if (s.id === 'A') {
-                    s.currentCost = Math.max(3, dCost - 1.2); // A社はD社より明確に安く
-                    s.isPriceDrop = true;
-                }
-                if (s.id === 'B') {
-                    s.currentCost = dCost + 2.2; // B社はD社+2.2万まで接近 (元はD社+4.5万程度)
-                    s.isPriceDrop = true;
-                }
-                if (s.id === 'C') {
-                    s.currentCost = dCost + 0.5; // C社はD社とほぼ同等へ
-                    s.isPriceDrop = true;
-                }
-            });
-
-            let msg = "📉 既存3社がD社に対抗して大幅値下げ！価格競争へ突入。";
-            document.getElementById('newsText').innerText = msg;
-            addLog(`[NEWS] ${msg}`, "#f1c40f");
-            return;
-        }
-        // ---------------------------------------
-
-        // --- バランス調整: 10ヶ月目のD社供給制限 ---
-        if (state.turn === 10) {
-            let msg = "⚠ 【緊急】D社が受注殺到により出荷制限を開始（最大40%まで）。";
-            document.getElementById('newsText').innerText = msg;
-            addLog(`[NEWS] ${msg}`, "#e74c3c");
-            // このターンも他のランダムニュースは発生させない
-            return;
-        }
-        // ---------------------------------------
-
-        // ニュース発生 (30%) - 8,10ターン目以外
-        if (state.turn > 1 && Math.random() < 0.3) {
-            let ev = events[Math.floor(Math.random() * events.length)];
-            document.getElementById('newsText').innerText = ev.text;
-            addLog(`[NEWS] ${ev.text}`);
-            suppliers.forEach(s => ev.func(s));
-        } else {
-            document.getElementById('newsText').innerText = "特になし";
-        }
     }
 
     function renderSuppliers() {
@@ -471,18 +411,20 @@ document.addEventListener('DOMContentLoaded', function() {
             let card = document.createElement('div');
             card.className = 'supplier-card';
             if (s.id === 'D' && state.turn === 7) card.classList.add('new-entry');
-            if (s.isPriceDrop) card.classList.add('price-drop'); // 値下げエフェクト
+            if (s.isPriceDrop) card.classList.add('price-drop');
             if (s.allocation > 0) card.classList.add('active');
+            if (s.disabled) card.classList.add('disabled');
 
-            // 値下げ時は価格表示を赤くする
             let costClass = s.isPriceDrop ? 'supplier-cost cost-down' : 'supplier-cost';
             let costText = s.currentCost.toFixed(1) + '万円';
             if (s.isPriceDrop) costText += ' ⬇';
 
-            // D社制限時の警告追加
             let warningText = "";
             if (s.id === 'D' && state.turn >= 10) {
                 warningText = `<div style="color:#e74c3c; font-size:0.75rem; margin-top:5px;">⚠ 出荷制限中 (最大40%)</div>`;
+            }
+            if (s.disabled) {
+                warningText = `<div style="color:#e74c3c; font-size:0.8rem; font-weight:bold; margin-top:5px;">🚫 今月は発注不可</div>`;
             }
 
             card.innerHTML = `
@@ -494,31 +436,73 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${warningText}
                 
                 <div class="specs">
-                    <span class="spec-item">リスク: <b>${s.risk}%</b></span>
-                    <span class="spec-item">品質: <b>${s.quality}%</b></span>
+                    <span class="spec-item">納期遅延リスク: <b>${s.risk}%</b></span>
+                    <span class="spec-item">不良品率: <b>${s.defectRate}%</b></span>
                 </div>
                 
                 <div class="slider-container">
                     <div class="slider-header">
                         <span>発注配分</span>
-                        <span class="percent-val" id="val-${s.id}">0%</span>
+                        <span class="percent-val" id="val-${s.id}">${s.allocation}%</span>
                     </div>
-                    <input type="range" min="0" max="100" step="10" value="0" 
-                           data-id="${s.id}" oninput="updateSlider('${s.id}', this.value)">
+                    <div class="adj-controls">
+                        <button class="adj-btn" onclick="adjustAllocation('${s.id}', -5)" ${s.disabled ? 'disabled' : ''}>-</button>
+                        <input type="range" min="0" max="100" step="5" value="${s.allocation}" 
+                               data-id="${s.id}" oninput="updateSlider('${s.id}', this.value)" ${s.disabled ? 'disabled' : ''}>
+                        <button class="adj-btn" onclick="adjustAllocation('${s.id}', 5)" ${s.disabled ? 'disabled' : ''}>+</button>
+                        <button class="adj-btn-max" onclick="setMaxAllocation('${s.id}')" ${s.disabled ? 'disabled' : ''}>残全て</button>
+                    </div>
                 </div>
             `;
             supplierListEl.appendChild(card);
         });
     }
 
-    // グローバル関数 (HTML属性から呼ぶため)
+    // --- 100%超過防止のロジック ---
     window.updateSlider = function(id, value) {
         let s = suppliers.find(sup => sup.id === id);
-        s.allocation = parseInt(value);
-        document.getElementById(`val-${id}`).innerText = value + "%";
+        if(s.disabled) return; 
         
+        let newVal = parseInt(value);
+        
+        // 自分以外の配分合計を計算
+        let otherTotal = suppliers.reduce((sum, sup) => sum + (sup.id === id || sup.hidden ? 0 : sup.allocation), 0);
+        // 残りの許容最大値を計算
+        let maxAllowed = 100 - otherTotal;
+        
+        // 許容値を超えようとした場合はクリップする
+        if (newVal > maxAllowed) {
+            newVal = maxAllowed;
+            document.querySelector(`input[data-id="${id}"]`).value = newVal;
+        }
+
+        s.allocation = newVal;
+        document.getElementById(`val-${id}`).innerText = newVal + "%";
         checkAllocationTotal();
     };
+
+    window.adjustAllocation = function(id, delta) {
+        let s = suppliers.find(sup => sup.id === id);
+        if(s.disabled) return;
+        let newVal = s.allocation + delta;
+        if (newVal < 0) newVal = 0;
+        // 上限処理はupdateSlider内で自動的に行われる
+        document.querySelector(`input[data-id="${id}"]`).value = newVal;
+        window.updateSlider(id, newVal);
+    };
+
+    window.setMaxAllocation = function(id) {
+        let s = suppliers.find(sup => sup.id === id);
+        if(s.disabled) return;
+        
+        let otherTotal = suppliers.reduce((sum, sup) => sum + (sup.id === id || sup.hidden ? 0 : sup.allocation), 0);
+        let remainder = 100 - otherTotal;
+        if (remainder < 0) remainder = 0;
+        
+        document.querySelector(`input[data-id="${id}"]`).value = remainder;
+        window.updateSlider(id, remainder);
+    };
+    // ---------------------------------
 
     function checkAllocationTotal() {
         let total = suppliers.reduce((sum, s) => sum + (s.hidden ? 0 : s.allocation), 0);
@@ -533,6 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
             totalAllocDisplay.className = "total-ng";
             actionBtn.disabled = true;
             if(total > 100) {
+                // ロジック上は超えないはずだが念のため
                 errorMsgEl.innerText = `⚠ ${total-100}% オーバーしています`;
             } else {
                 errorMsgEl.innerText = `あと ${100-total}% 割り振ってください`;
@@ -540,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // === ターン実行 ===
+    // --- 発注実行処理 ---
     actionBtn.addEventListener('click', function() {
         let totalCost = 0;
         let totalPenalty = 0;
@@ -548,17 +533,14 @@ document.addEventListener('DOMContentLoaded', function() {
         let weightedReputationDamage = 0;
         let logDetails = "";
 
-        // 各サプライヤー計算
         suppliers.forEach(s => {
-            if (s.hidden || s.allocation === 0) return;
+            if (s.hidden || s.allocation === 0 || s.disabled) return;
 
             let orderQty = Math.round(state.currentDemand * (s.allocation / 100));
             let trouble = [];
 
-            // --- 10ヶ月目以降: D社の供給制限 (40% Cap) ---
+            // 10ヶ月目以降: D社の供給制限 (端数考慮)
             if (s.id === 'D' && state.turn >= 10) {
-                // 配分率が40%を超えている場合のみ、厳密に個数制限を適用
-                // (40%設定時の端数切り上げによる微細な超過は許容する)
                 if (s.allocation > 40) {
                     let maxAllowed = Math.floor(state.currentDemand * 0.4);
                     if (orderQty > maxAllowed) {
@@ -568,12 +550,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             }
-            // ------------------------------------------------
 
             let cost = s.currentCost * orderQty;
             let delivered = orderQty;
 
-            // リスク判定 (通常の配送事故)
+            // 納期遅延判定
             if (Math.random() * 100 < s.risk) {
                 let lost = Math.floor(orderQty * (Math.random() * 0.8 + 0.2)); 
                 delivered -= lost;
@@ -581,9 +562,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 weightedReputationDamage += 10;
             }
 
-            // 品質判定
+            // 不良品判定
             let defects = 0;
-            if (Math.random() * 100 > s.quality) {
+            if (Math.random() * 100 < s.defectRate) {
                 defects = Math.ceil(delivered * 0.1); 
                 totalPenalty += defects * 3; 
                 trouble.push(`<span style="color:#e67e22">不良${defects}</span>`);
@@ -598,11 +579,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // 全体収支
         let salesUnits = Math.min(deliveredTotal, state.currentDemand);
         let revenue = salesUnits * REVENUE_UNIT_PRICE;
         
-        // 欠品ペナルティ (D社の制限や事故で足りなかった分)
         if (salesUnits < state.currentDemand) {
             let miss = state.currentDemand - salesUnits;
             logDetails += `<div style="color:#e74c3c; font-weight:bold;">⚠ 欠品: ${miss}個 (機会損失)</div>`;
@@ -611,16 +590,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let profit = revenue - totalCost - totalPenalty - FIXED_COST;
 
-        // 更新
+        // 状態更新
         state.money += profit;
         state.reputation -= weightedReputationDamage;
         if (state.reputation < 0) state.reputation = 0;
 
-        // ログ出力
+        // ダッシュボードの表示更新（ターン数はまだ増やさない）
+        updateDashboard();
+
+        // ログエリアに出力
         let profitColor = profit >= 0 ? '#2ecc71' : '#e74c3c';
         let logHtml = `
             <div style="border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:5px;">
-                <div style="color:#f1c40f;">${state.turn}月 (需要${state.currentDemand})</div>
+                <div style="color:#f1c40f;">${state.turn} ヶ月目 (需要${state.currentDemand})</div>
                 ${logDetails}
                 <div>売上${revenue} - 原価${totalCost.toFixed(0)} - 固定費${FIXED_COST}</div>
                 <div style="font-weight:bold; text-align:right; color:${profitColor}">損益: ${profit.toFixed(0)}万円</div>
@@ -628,24 +610,44 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         logAreaEl.insertAdjacentHTML('afterbegin', logHtml);
 
-        // 次へ
+        // --- 月次決算結果ポップアップの表示 ---
+        document.getElementById('monthResultTitle').innerText = `${state.turn} ヶ月目 決算`;
+        
+        let troubleHtml = logDetails ? 
+            `<div style="font-size:0.9rem; background:#ffebee; padding:10px; border-radius:5px; margin-top:15px; border-left:4px solid #e74c3c;"><b>⚠ 発生したトラブル</b><br>${logDetails}</div>` : 
+            `<div style="font-size:0.9rem; background:#e8f5e9; padding:10px; border-radius:5px; margin-top:15px; border-left:4px solid #2ecc71; color:#27ae60;"><b>✨ トラブルなし！</b></div>`;
+
+        let resultBody = `
+            <table class="result-table">
+                <tr><td>売上</td><td class="val-plus">${revenue} 万円</td></tr>
+                <tr><td>原価</td><td class="val-minus">-${totalCost.toFixed(0)} 万円</td></tr>
+                <tr><td>固定費</td><td class="val-minus">-${FIXED_COST} 万円</td></tr>
+                <tr><td>トラブル損失</td><td class="val-minus">-${totalPenalty} 万円</td></tr>
+                <tr><td>最終損益</td><td class="val-total" style="color:${profitColor};">${profit.toFixed(0)} 万円</td></tr>
+            </table>
+            ${troubleHtml}
+        `;
+        document.getElementById('monthResultBody').innerHTML = resultBody;
+        monthResultOverlay.classList.remove('hidden');
+    });
+
+    // 決算モーダルを閉じて次へ進む
+    window.closeMonthResult = function() {
+        monthResultOverlay.classList.add('hidden');
+        
         state.turn++;
         if (state.turn > MAX_TURNS || state.money < 0) {
             endGame();
         } else {
-            initTurn();
+            showTurnModal(); // 次の月へ
         }
-    });
+    };
 
     function updateDashboard() {
         document.getElementById('turnDisplay').innerText = state.turn > MAX_TURNS ? MAX_TURNS : state.turn;
         document.getElementById('demandDisplay').innerText = state.currentDemand;
         document.getElementById('moneyDisplay').innerText = Math.floor(state.money);
         document.getElementById('reputationDisplay').innerText = Math.floor(state.reputation);
-    }
-
-    function addLog(text, color="#fff") {
-        logAreaEl.insertAdjacentHTML('afterbegin', `<div class="log-entry" style="color:${color}">${text}</div>`);
     }
 
     function endGame() {
@@ -658,7 +660,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let msg = "";
         if (state.money < 0) msg = "💀 倒産... 需要の波と固定費の重みに耐えきれませんでした。";
-        else if (finalScore > 5000) msg = "🏆 達人！ リスク分散とD社の活用が見事でした。";
+        else if (finalScore > 5000) msg = "🏆 達人！ 納期遅延リスクの分散と各部署の調整が見事でした。";
         else msg = "👍 終了。難しい環境でよく耐えました。次はさらにスコアアップを！";
         
         document.getElementById('feedbackText').innerText = msg;
