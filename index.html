@@ -282,7 +282,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const MAX_TURNS = 12;
-    const REVENUE_UNIT_PRICE = 18; 
     const FIXED_COST = 300;        
 
     let suppliers = [
@@ -293,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
 
     let state = {
-        turn: 1, money: 2000, reputation: 100, currentDemand: 100
+        turn: 1, money: 2000, reputation: 100, currentDemand: 100, unitPrice: 18
     };
 
     const randomEvents = [
@@ -338,10 +337,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // --- シナリオ（固定イベント）の判定 ---
         if (state.turn === 3) {
-            state.currentDemand = Math.floor(Math.random() * 31) + 150; // 150-180
-            modalTitle = "🏃‍♂️ 営業部より：新規案件獲得！";
-            modalText = `大口顧客のコンペに勝利しました！キャンペーンも重なり、今月の需要が <b>${state.currentDemand}個</b> に急増します。<br><br><span style="color:#e74c3c; font-weight:bold;">「絶対に欠品させないでください！」</span>`;
-            newsTextForTicker = "営業部が大型案件獲得（需要急増）";
+            state.unitPrice = 14; // 販売単価の強制値下げ
+            modalTitle = "🙇‍♂️ 営業部より：コストダウン要請";
+            modalText = `主要顧客から強烈な値下げ要求があり、自社の製品販売価格が<br><b>18万円 → 14万円</b> に下落しました。<br><br><span style="color:#e74c3c; font-weight:bold;">「高い原料（B社など）を使い続けると確実に赤字になります。至急、調達コストを見直してください！」</span>`;
+            newsTextForTicker = "顧客からの値下げ要求（販売単価下落）";
             applyRandomNews = false;
         } 
         else if (state.turn === 5) {
@@ -580,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         let salesUnits = Math.min(deliveredTotal, state.currentDemand);
-        let revenue = salesUnits * REVENUE_UNIT_PRICE;
+        let revenue = salesUnits * state.unitPrice;
         
         if (salesUnits < state.currentDemand) {
             let miss = state.currentDemand - salesUnits;
@@ -619,8 +618,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let resultBody = `
             <table class="result-table">
-                <tr><td>売上</td><td class="val-plus">${revenue} 万円</td></tr>
-                <tr><td>原価</td><td class="val-minus">-${totalCost.toFixed(0)} 万円</td></tr>
+                <tr><td>売上 <span style="font-size:0.8rem; color:#666;">(@${state.unitPrice}万×${salesUnits})</span></td><td class="val-plus">${revenue} 万円</td></tr>
+                <tr><td>原料原価</td><td class="val-minus">-${totalCost.toFixed(0)} 万円</td></tr>
                 <tr><td>固定費</td><td class="val-minus">-${FIXED_COST} 万円</td></tr>
                 <tr><td>トラブル損失</td><td class="val-minus">-${totalPenalty} 万円</td></tr>
                 <tr><td>最終損益</td><td class="val-total" style="color:${profitColor};">${profit.toFixed(0)} 万円</td></tr>
