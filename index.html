@@ -337,17 +337,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // --- シナリオ（固定イベント）の判定 ---
         if (state.turn === 3) {
-            state.unitPrice = 14; // 販売単価の強制値下げ
+            state.unitPrice = 15; // 販売単価の強制値下げ（14から15へ緩和）
             modalTitle = "🙇‍♂️ 営業部より：コストダウン要請";
-            modalText = `主要顧客から強烈な値下げ要求があり、自社の製品販売価格が<br><b>18万円 → 14万円</b> に下落しました。<br><br><span style="color:#e74c3c; font-weight:bold;">「高い原料（B社など）を使い続けると確実に赤字になります。至急、調達コストを見直してください！」</span>`;
+            modalText = `主要顧客から強烈な値下げ要求があり、自社の製品販売価格が<br><b>18万円 → 15万円</b> に下落しました。<br><br><span style="color:#e74c3c; font-weight:bold;">「高い原料（B社など）を使い続けると確実に赤字になります。至急、調達コストを見直してください！」</span>`;
             newsTextForTicker = "顧客からの値下げ要求（販売単価下落）";
             applyRandomNews = false;
         } 
         else if (state.turn === 5) {
             suppliers.find(s => s.id === 'A').disabled = true;
-            modalTitle = "📐 品証部より：4M変更縛り";
-            modalText = `顧客側の4M（人・機械・材料・方法）変更承認が遅れています。<br><br><span style="color:#e74c3c; font-weight:bold;">未承認の【A社】への発注は今月全面ストップ</span>し、既存のB社・C社のみで対応してください。`;
-            newsTextForTicker = "4M変更承認遅れ。A社使用不可";
+            modalTitle = "📐 品証部より：A社品トラブル発生";
+            modalText = `A社品に異物混入による品質トラブルが発生しました。<br><br><span style="color:#e74c3c; font-weight:bold;">品質保証部から、「A社は使用禁止（発注ストップ）」の通達がありました。</span><br>既存のB社・C社のみで対応してください。`;
+            newsTextForTicker = "A社品に異物混入。発注ストップ";
             applyRandomNews = false;
         }
         else if (state.turn === 7) {
@@ -371,8 +371,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         else if (state.turn === 10) {
             modalTitle = "⚠ 緊急：D社の供給制限";
-            modalText = `D社に注文が殺到し、キャパオーバーに陥りました。<br><br><span style="color:#e74c3c; font-weight:bold;">今月以降、D社への発注は【需要の40%】が上限</span>となります。超過分は未納カットされます。`;
-            newsTextForTicker = "D社が供給制限を開始（上限40%）";
+            modalText = `D社の生産国で地域紛争が発生し、通常通りの供給量が確保できなくなりました。<br><br><span style="color:#e74c3c; font-weight:bold;">今月以降、D社への発注は【需要の40%】が上限</span>となります。超過分は未納カットされます。`;
+            newsTextForTicker = "D社生産国で地域紛争。供給制限（上限40%）";
             applyRandomNews = false;
         }
 
@@ -419,8 +419,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (s.isPriceDrop) costText += ' ⬇';
 
             let warningText = "";
+            let maxRange = 100;
+
+            // 10ヶ月目以降のD社のUI制限
             if (s.id === 'D' && state.turn >= 10) {
                 warningText = `<div style="color:#e74c3c; font-size:0.75rem; margin-top:5px;">⚠ 出荷制限中 (最大40%)</div>`;
+                maxRange = 40;
             }
             if (s.disabled) {
                 warningText = `<div style="color:#e74c3c; font-size:0.8rem; font-weight:bold; margin-top:5px;">🚫 今月は発注不可</div>`;
@@ -446,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="adj-controls">
                         <button class="adj-btn" onclick="adjustAllocation('${s.id}', -5)" ${s.disabled ? 'disabled' : ''}>-</button>
-                        <input type="range" min="0" max="100" step="5" value="${s.allocation}" 
+                        <input type="range" min="0" max="${maxRange}" step="5" value="${s.allocation}" 
                                data-id="${s.id}" oninput="updateSlider('${s.id}', this.value)" ${s.disabled ? 'disabled' : ''}>
                         <button class="adj-btn" onclick="adjustAllocation('${s.id}', 5)" ${s.disabled ? 'disabled' : ''}>+</button>
                         <button class="adj-btn-max" onclick="setMaxAllocation('${s.id}')" ${s.disabled ? 'disabled' : ''}>残全て</button>
@@ -469,6 +473,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // 残りの許容最大値を計算
         let maxAllowed = 100 - otherTotal;
         
+        // 10ヶ月目以降のD社の場合は上限を40に制限
+        if (id === 'D' && state.turn >= 10) {
+            maxAllowed = Math.min(maxAllowed, 40);
+        }
+
         // 許容値を超えようとした場合はクリップする
         if (newVal > maxAllowed) {
             newVal = maxAllowed;
@@ -496,6 +505,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let otherTotal = suppliers.reduce((sum, sup) => sum + (sup.id === id || sup.hidden ? 0 : sup.allocation), 0);
         let remainder = 100 - otherTotal;
+        
+        // 10ヶ月目以降のD社の場合は残り全ても40までに制限
+        if (id === 'D' && state.turn >= 10) {
+            remainder = Math.min(remainder, 40);
+        }
+
         if (remainder < 0) remainder = 0;
         
         document.querySelector(`input[data-id="${id}"]`).value = remainder;
@@ -539,6 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let trouble = [];
 
             // 10ヶ月目以降: D社の供給制限 (端数考慮)
+            // ※UIでブロックするため通常ここには引っかからないが、念のため残す
             if (s.id === 'D' && state.turn >= 10) {
                 if (s.allocation > 40) {
                     let maxAllowed = Math.floor(state.currentDemand * 0.4);
