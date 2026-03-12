@@ -285,10 +285,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const FIXED_COST = 300;        
 
     let suppliers = [
-        { id: 'A', name: "A社 (インドメーカー)", baseCost: 7.5, currentCost: 7.5, risk: 25, defectRate: 20, desc: "低コストだが納期遅延リスク高", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
-        { id: 'B', name: "B社 (国内大手メーカー)", baseCost: 13.0, currentCost: 13.0, risk: 2, defectRate: 1, desc: "高コストだが超安定", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
-        { id: 'C', name: "C社 (中国メーカー)", baseCost: 10.5, currentCost: 10.5, risk: 10, defectRate: 10, desc: "バランス型", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
-        { id: 'D', name: "D社 (黒船)", baseCost: 8.5, currentCost: 8.5, risk: 5, defectRate: 5, desc: "【新規】低不良品率・低価格", allocation: 0, hidden: true, disabled: false, isPriceDrop: false }
+        { id: 'A', name: "A社 (インドメーカー)", baseCost: 7.0, currentCost: 7.0, risk: 25, defectRate: 20, desc: "低コストだが納期遅延リスク高", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'B', name: "B社 (国内大手メーカー)", baseCost: 12.0, currentCost: 12.0, risk: 2, defectRate: 1, desc: "高コストだが超安定", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'C', name: "C社 (中国メーカー)", baseCost: 9.5, currentCost: 9.5, risk: 10, defectRate: 10, desc: "バランス型", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'D', name: "D社 (黒船)", baseCost: 8.0, currentCost: 8.0, risk: 5, defectRate: 5, desc: "【新規】低不良品率・低価格", allocation: 0, hidden: true, disabled: false, isPriceDrop: false }
     ];
 
     let state = {
@@ -339,11 +339,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } 
         else if (state.turn === 4) {
             suppliers.forEach(s => {
-                if(s.id === 'A') s.currentCost += 3.0;
-                if(s.id === 'C') s.currentCost += 2.0;
+                if(s.id === 'A') s.currentCost += 2.0; // 上昇幅を緩和
+                if(s.id === 'C') s.currentCost += 1.5; // 上昇幅を緩和
             });
             modalTitle = "💱 市場動向：円安進行";
-            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>急激な円安が進行し、海外メーカーの調達コストが悪化しています。<br><span style="color:#e74c3c; font-weight:bold;">A社（インド）のコストが+3.0万円、C社（中国）のコストが+2.0万円上昇しました。</span></div>`;
+            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>急激な円安が進行し、海外メーカーの調達コストが悪化しています。<br><span style="color:#e74c3c; font-weight:bold;">A社（インド）のコストが+2.0万円、C社（中国）のコストが+1.5万円上昇しました。</span></div>`;
             newsTextForTicker = "⚡ 円安進行！海外(A・C社)のコスト増";
         }
         else if (state.turn === 5) {
@@ -354,11 +354,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         else if (state.turn === 6) {
             suppliers.forEach(s => {
-                s.currentCost = Math.max(0, s.currentCost - 0.5);
+                s.currentCost = Math.max(0, s.currentCost - 1.0); // 下落幅を拡大して救済
                 s.isPriceDrop = true; // エフェクト用
             });
             modalTitle = "📉 市場動向：原油安";
-            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>原油価格の下落により、輸送コストなどが低下しました。<br><span style="color:#2ecc71; font-weight:bold;">全サプライヤーのコストが一律 -0.5万円 下がりました。</span></div>`;
+            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>原油価格の下落により、輸送コストなどが低下しました。<br><span style="color:#2ecc71; font-weight:bold;">全サプライヤーのコストが一律 -1.0万円 下がりました。</span></div>`;
             newsTextForTicker = "📉 原油安。全社コスト微減";
         }
         else if (state.turn === 7) {
