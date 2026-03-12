@@ -274,8 +274,9 @@
 <div class="result-overlay hidden" id="resultScreen">
     <h2 style="color:var(--primary);">年間決算報告</h2>
     <div style="font-size:4rem; font-weight:bold; color:var(--accent);" id="finalScore">0</div>
-    <p style="color:#777;">最終スコア</p>
-    <div id="feedbackText" style="background:#f4f7f6; padding:15px; border-radius:10px; margin:20px 0; width:100%; text-align:left; font-size:0.95rem;"></div>
+    <p style="color:#777; margin-bottom: 5px;">最終スコア</p>
+    <div id="finalScoreDetails" style="font-size: 0.9rem; color: #555; margin-bottom: 15px;"></div>
+    <div id="feedbackText" style="background:#f4f7f6; padding:15px; border-radius:10px; margin:10px 0 20px 0; width:100%; text-align:left; font-size:0.95rem;"></div>
     <button class="btn-main" onclick="location.reload()">もう一度遊ぶ</button>
 </div>
 
@@ -686,12 +687,29 @@ document.addEventListener('DOMContentLoaded', function() {
         let finalScore = Math.floor(state.money + (state.reputation * 15));
         document.getElementById('finalScore').innerText = finalScore;
 
+        // 信用スコアと資金の内訳を追加
+        document.getElementById('finalScoreDetails').innerText = `内訳: 資金 ${Math.floor(state.money)}万円 + (信用スコア ${Math.floor(state.reputation)} × 15)`;
+
         let msg = "";
-        if (state.money < 0) msg = "💀 倒産... 需要の波と固定費の重みに耐えきれませんでした。";
-        else if (finalScore > 5000) msg = "🏆 達人！ 納期遅延リスクの分散と各部署の調整が見事でした。";
-        else msg = "👍 終了。難しい環境でよく耐えました。次はさらにスコアアップを！";
+        let rank = "";
+        if (finalScore >= 5000) {
+            rank = "SSランク";
+            msg = "🏆 伝説のバイヤー！リスクとコストを完璧にコントロールしました。";
+        } else if (finalScore >= 4000) {
+            rank = "Aランク";
+            msg = "✨ 優秀！資本を二倍以上に増やしました。各部署からの信頼も厚いです。";
+        } else if (finalScore >= 2000) {
+            rank = "Bランク";
+            msg = "👍 合格点！激動の市場を無難に乗り切りました。さらなる利益を目指しましょう。";
+        } else if (finalScore >= 0) {
+            rank = "Cランク";
+            msg = "📉 元本割れ... 厳しい市場環境で資産を減らしてしまいました。リスク管理の見直しが必要です。";
+        } else {
+            rank = "Dランク";
+            msg = "💀 倒産！資金ショートにより工場は稼働停止。需要の波と固定費の重みに耐えきれませんでした。";
+        }
         
-        document.getElementById('feedbackText').innerText = msg;
+        document.getElementById('feedbackText').innerHTML = `<strong style="font-size:1.3rem; color:var(--primary); display:block; margin-bottom:8px;">【評価】 ${rank}</strong>${msg}`;
     }
 });
 </script>
