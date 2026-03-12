@@ -239,7 +239,7 @@
             <p style="font-weight:bold; color:var(--accent); margin-top:15px; border-bottom:1px solid #ddd; padding-bottom:5px;">📜 ルール</p>
             <ul style="text-align:left; padding-left:20px; margin-top:5px; color:#444;">
                 <li style="margin-bottom:8px;">毎月、需要予測に基づき各サプライヤーへの<b>発注配分（計100%）</b>を決定します。</li>
-                <li style="margin-bottom:8px;">各社には「納期遅延リスク」や「不良品率」があります。</li>
+                <li style="margin-bottom:8px;">各社には「納期遅延リスク」や「不良品率」があります。<br>※納期遅延が発生すると発注の<b>【50%】</b>が未納となり、不良品が発生すると納品の<b>【20%】</b>が不良として処理されます。</li>
                 <li style="margin-bottom:8px;">毎月必ず<b>固定費(-300万円)</b>がかかります。高い業者ばかり選ぶと赤字倒産します。</li>
                 <li>他部署からの要望や市場ニュースにも柔軟に対応してください！</li>
             </ul>
@@ -295,12 +295,8 @@ document.addEventListener('DOMContentLoaded', function() {
         turn: 1, money: 2000, reputation: 100, currentDemand: 100, unitPrice: 18
     };
 
-    const randomEvents = [
-        { text: "市場は安定。", func: () => {} },
-        { text: "⚡ 円安進行！海外(A・C社)のコスト増", func: (s) => { if(s.id==='A') s.currentCost += 3.0; if(s.id==='C') s.currentCost += 2.0; } },
-        { text: "🔥 国内物流混乱。B社の納期遅延リスク増", func: (s) => { if(s.id==='B') s.risk += 20; } },
-        { text: "📉 原油安。全社コスト微減", func: (s) => { s.currentCost -= 0.5; } }
-    ];
+    // グループワーク用に各月の需要を固定 (全12ヶ月分)
+    const DEMAND_SCHEDULE = [100, 110, 100, 90, 120, 100, 110, 100, 90, 120, 110, 100];
 
     const supplierListEl = document.getElementById('supplierList');
     const totalAllocDisplay = document.getElementById('totalAllocationDisplay');
@@ -319,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 毎月の月初処理（モーダル表示）
     function showTurnModal() {
-        // 変数・状態リセット
+        // 変数・状態リセット (基本のインフレ処理は残す)
         suppliers.forEach(s => {
             if(!s.hidden && state.turn !== 8) s.currentCost += 0.1; // 8月以外インフレ
             s.allocation = 0;
@@ -327,35 +323,49 @@ document.addEventListener('DOMContentLoaded', function() {
             s.isPriceDrop = false;
         });
 
-        // 基本の需要計算
-        state.currentDemand = Math.floor(Math.random() * 41) + 80; // 80~120
+        // 基本の需要計算 (固定配列から取得)
+        state.currentDemand = DEMAND_SCHEDULE[state.turn - 1];
         
         let modalTitle = `📅 ${state.turn} ヶ月目 開始`;
         let modalText = `今月の基本的な需要予測は <b>${state.currentDemand}個</b> です。<br><br>発注配分を決定してください。`;
-        let newsTextForTicker = "特になし";
-        let applyRandomNews = true;
+        let newsTextForTicker = "市場は安定。";
 
-        // --- シナリオ（固定イベント）の判定 ---
+        // --- 全12ターンの固定シナリオ判定 ---
         if (state.turn === 3) {
             state.unitPrice = 15; // 販売単価の強制値下げ（14から15へ緩和）
             modalTitle = "🙇‍♂️ 営業部より：コストダウン要請";
             modalText = `主要顧客から強烈な値下げ要求があり、自社の製品販売価格が<br><b>18万円 → 15万円</b> に下落しました。<br><br><span style="color:#e74c3c; font-weight:bold;">「高い原料（B社など）を使い続けると確実に赤字になります。至急、調達コストを見直してください！」</span>`;
             newsTextForTicker = "顧客からの値下げ要求（販売単価下落）";
-            applyRandomNews = false;
         } 
+        else if (state.turn === 4) {
+            suppliers.forEach(s => {
+                if(s.id === 'A') s.currentCost += 3.0;
+                if(s.id === 'C') s.currentCost += 2.0;
+            });
+            modalTitle = "💱 市場動向：円安進行";
+            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>急激な円安が進行し、海外メーカーの調達コストが悪化しています。<br><span style="color:#e74c3c; font-weight:bold;">A社（インド）のコストが+3.0万円、C社（中国）のコストが+2.0万円上昇しました。</span></div>`;
+            newsTextForTicker = "⚡ 円安進行！海外(A・C社)のコスト増";
+        }
         else if (state.turn === 5) {
             suppliers.find(s => s.id === 'A').disabled = true;
             modalTitle = "📐 品証部より：A社品トラブル発生";
             modalText = `A社品に異物混入による品質トラブルが発生しました。<br><br><span style="color:#e74c3c; font-weight:bold;">品質保証部から、「A社は使用禁止（発注ストップ）」の通達がありました。</span><br>既存のB社・C社のみで対応してください。`;
             newsTextForTicker = "A社品に異物混入。発注ストップ";
-            applyRandomNews = false;
+        }
+        else if (state.turn === 6) {
+            suppliers.forEach(s => {
+                s.currentCost = Math.max(0, s.currentCost - 0.5);
+                s.isPriceDrop = true; // エフェクト用
+            });
+            modalTitle = "📉 市場動向：原油安";
+            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>原油価格の下落により、輸送コストなどが低下しました。<br><span style="color:#2ecc71; font-weight:bold;">全サプライヤーのコストが一律 -0.5万円 下がりました。</span></div>`;
+            newsTextForTicker = "📉 原油安。全社コスト微減";
         }
         else if (state.turn === 7) {
             suppliers.find(s => s.id === 'D').hidden = false;
             modalTitle = "🚢 購買部：黒船サプライヤー参入";
             modalText = `低不良品率・低価格を謳う新規サプライヤー<b>「D社」</b>が取引を打診してきました。今月から発注ポートフォリオに組み込み可能です。`;
             newsTextForTicker = "新規サプライヤー「D社」参入";
-            applyRandomNews = false;
         }
         else if (state.turn === 8) {
             let dCost = suppliers.find(s => s.id === 'D').currentCost;
@@ -367,21 +377,23 @@ document.addEventListener('DOMContentLoaded', function() {
             modalTitle = "📉 市場動向：熾烈な価格競争";
             modalText = `D社の参入に危機感を覚えた既存3社（A・B・C社）が、一斉に<b>大幅な値下げ</b>を実施しました！ポートフォリオを見直すチャンスです。`;
             newsTextForTicker = "既存3社がD社に対抗し大幅値下げ";
-            applyRandomNews = false;
+        }
+        else if (state.turn === 9) {
+            suppliers.forEach(s => {
+                if(s.id === 'B') s.risk += 20;
+            });
+            modalTitle = "🚛 物流トラブル：国内物流混乱";
+            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>国内の主要物流網で大規模な遅延が発生しています。<br><span style="color:#e74c3c; font-weight:bold;">普段は安定している B社（国内大手）の納期遅延リスクが +20% 上昇しました。</span></div>`;
+            newsTextForTicker = "🔥 国内物流混乱。B社の納期遅延リスク増";
         }
         else if (state.turn === 10) {
             modalTitle = "⚠ 緊急：D社の供給制限";
             modalText = `D社の生産国で地域紛争が発生し、通常通りの供給量が確保できなくなりました。<br><br><span style="color:#e74c3c; font-weight:bold;">今月以降、D社への発注は【需要の40%】が上限</span>となります。超過分は未納カットされます。`;
             newsTextForTicker = "D社生産国で地域紛争。供給制限（上限40%）";
-            applyRandomNews = false;
         }
-
-        // --- ランダムニュースの処理 ---
-        if (applyRandomNews && state.turn > 1 && Math.random() < 0.3) {
-            let ev = randomEvents[Math.floor(Math.random() * randomEvents.length)];
-            newsTextForTicker = ev.text;
-            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>${ev.text}</div>`;
-            suppliers.forEach(s => ev.func(s));
+        else {
+            // 1, 2, 11, 12ヶ月目は追加イベントなし
+            newsTextForTicker = "市場は安定。";
         }
 
         // モーダルへテキストセット
@@ -569,20 +581,21 @@ document.addEventListener('DOMContentLoaded', function() {
             let cost = s.currentCost * orderQty;
             let delivered = orderQty;
 
-            // 納期遅延判定
+            // 納期遅延判定 (発生した場合は発注数の50%が未納になる)
             if (Math.random() * 100 < s.risk) {
-                let lost = Math.floor(orderQty * (Math.random() * 0.8 + 0.2)); 
+                let lost = Math.floor(orderQty * 0.5); // 影響度を50%で固定化
+                if (lost === 0 && orderQty > 0) lost = 1; // 少なくとも1つはロス
                 delivered -= lost;
-                trouble.push(`<span style="color:#e74c3c">配送事故-${lost}</span>`);
+                trouble.push(`<span style="color:#e74c3c">納期遅延(50%減):-${lost}個</span>`);
                 weightedReputationDamage += 10;
             }
 
-            // 不良品判定
+            // 不良品判定 (発生した場合は納品数の20%が不良品になる)
             let defects = 0;
             if (Math.random() * 100 < s.defectRate) {
-                defects = Math.ceil(delivered * 0.1); 
+                defects = Math.ceil(delivered * 0.2); // 影響度を20%で固定化
                 totalPenalty += defects * 3; 
-                trouble.push(`<span style="color:#e67e22">不良${defects}</span>`);
+                trouble.push(`<span style="color:#e67e22">不良品(20%混入):${defects}個</span>`);
                 weightedReputationDamage += 5;
             }
 
