@@ -381,10 +381,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         else if (state.turn === 9) {
             suppliers.forEach(s => {
-                if(s.id !== 'B') s.risk += 20; // B社以外の納期リスクを上げる
+                if(s.id === 'A' || s.id === 'C') s.risk += 20;
+                if(s.id === 'D') s.risk += 10;
             });
             modalTitle = "🚢 物流トラブル：世界的港湾ストライキ";
-            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>主要な国際港で大規模なストライキが発生し、海上輸送がマヒしています。<br><span style="color:#e74c3c; font-weight:bold;">海外メーカー（A社・C社・D社）の納期遅延リスクが一律 +20% 上昇しました。</span><br>国内大手（B社）の「超安定」という強みが活きる場面です。</div>`;
+            modalText += `<br><br><div style="background:#fff3cd; padding:8px; border-radius:4px; font-size:0.9rem;"><b>【市場ニュース】</b><br>主要な国際港で大規模なストライキが発生し、海上輸送がマヒしています。<br><span style="color:#e74c3c; font-weight:bold;">海外メーカーの納期遅延リスクが上昇（A・C社は+20%、D社は+10%）しました。</span><br>国内大手（B社）の「超安定」という強みが活きる場面です。</div>`;
             newsTextForTicker = "🔥 港湾ストライキ発生。海外組の納期リスク激増";
         }
         else if (state.turn === 10) {
