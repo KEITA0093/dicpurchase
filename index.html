@@ -694,26 +694,50 @@ document.addEventListener('DOMContentLoaded', function() {
         // 信用スコアと資金の内訳を追加
         document.getElementById('finalScoreDetails').innerText = `内訳: 資金 ${Math.floor(state.money)}万円 + (信用スコア ${Math.floor(state.reputation)} × 15)`;
 
-        let msg = "";
         let rank = "";
         if (finalScore >= 5000) {
             rank = "SSランク";
-            msg = "🏆 伝説のバイヤー！リスクとコストを完璧にコントロールしました。";
         } else if (finalScore >= 4000) {
             rank = "Aランク";
-            msg = "✨ 優秀！資本を二倍以上に増やしました。各部署からの信頼も厚いです。";
         } else if (finalScore >= 2000) {
             rank = "Bランク";
-            msg = "👍 合格点！激動の市場を無難に乗り切りました。さらなる利益を目指しましょう。";
         } else if (finalScore >= 0) {
             rank = "Cランク";
-            msg = "📉 元本割れ... 厳しい市場環境で資産を減らしてしまいました。リスク管理の見直しが必要です。";
         } else {
             rank = "Dランク";
-            msg = "💀 倒産！資金ショートにより工場は稼働停止。需要の波と固定費の重みに耐えきれませんでした。";
+        }
+
+        // 資金に対するコメント (初期資金2000万円基準)
+        let moneyMsg = "";
+        if (state.money >= 4000) {
+            moneyMsg = "💰 <b>資金:</b> 素晴らしい！資本を初期の2倍以上に増やしました。";
+        } else if (state.money >= 2000) {
+            moneyMsg = "💰 <b>資金:</b> 黒字達成！堅実に利益を確保しました。";
+        } else if (state.money >= 0) {
+            moneyMsg = "💰 <b>資金:</b> 元本割れ... 厳しい市場環境で資産を減らしてしまいました。";
+        } else {
+            moneyMsg = "💰 <b>資金:</b> 倒産！資金ショートにより工場は稼働停止しました。";
+        }
+
+        // 信用スコアに対するコメント (初期スコア100基準)
+        let repMsg = "";
+        if (state.reputation >= 100) {
+            repMsg = "🤝 <b>信用:</b> 各部署からの信頼は絶大です！完璧なリスク管理でした。";
+        } else if (state.reputation >= 80) {
+            repMsg = "🤝 <b>信用:</b> 軽微なトラブルはありましたが、安定した供給を維持しました。";
+        } else if (state.reputation >= 50) {
+            repMsg = "🤝 <b>信用:</b> 欠品や不良品が目立ち、他部署から不満の声が出ています。";
+        } else {
+            repMsg = "🤝 <b>信用:</b> 工場や営業からの信用は地に落ちています...早急な改善が必要です。";
         }
         
-        document.getElementById('feedbackText').innerHTML = `<strong style="font-size:1.3rem; color:var(--primary); display:block; margin-bottom:8px;">【評価】 ${rank}</strong>${msg}`;
+        document.getElementById('feedbackText').innerHTML = `
+            <strong style="font-size:1.3rem; color:var(--primary); display:block; margin-bottom:12px; border-bottom: 2px solid #ddd; padding-bottom: 5px;">
+                【総合評価】 ${rank}
+            </strong>
+            <div style="margin-bottom: 8px;">${moneyMsg}</div>
+            <div>${repMsg}</div>
+        `;
     }
 });
 </script>
