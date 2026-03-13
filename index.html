@@ -239,7 +239,7 @@
             <p style="font-weight:bold; color:var(--accent); margin-top:15px; border-bottom:1px solid #ddd; padding-bottom:5px;">📜 ルール</p>
             <ul style="text-align:left; padding-left:20px; margin-top:5px; color:#444;">
                 <li style="margin-bottom:8px;">毎月、需要予測に基づき各サプライヤーへの<b>発注配分（計100%）</b>を決定します。</li>
-                <li style="margin-bottom:8px;">各社には「納期遅延リスク」や「不良品率」があります。<br>※納期遅延が発生すると発注の<b>【50%】</b>が未納となり、不良品が発生すると納品の<b>【20%】</b>が不良として処理されます。</li>
+                <li style="margin-bottom:8px;">各社には「納期遅延リスク」や「不良品率」があります。<br>※納期遅延で欠品すると<b>1個あたり4万円の緊急手配コスト</b>、不良品が発生すると<b>1個あたり5万円の補償コスト</b>と、大きな信用低下が発生します。</li>
                 <li style="margin-bottom:8px;">毎月必ず<b>固定費(-300万円)</b>がかかります。高い業者ばかり選ぶと赤字倒産します。</li>
                 <li>他部署からの要望や市場ニュースにも柔軟に対応してください！</li>
             </ul>
@@ -286,10 +286,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const FIXED_COST = 300;        
 
     let suppliers = [
-        { id: 'A', name: "A社 (インドメーカー)", baseCost: 7.0, currentCost: 7.0, risk: 25, defectRate: 20, desc: "低コストだが納期遅延リスク高", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
-        { id: 'B', name: "B社 (国内大手メーカー)", baseCost: 12.0, currentCost: 12.0, risk: 2, defectRate: 1, desc: "高コストだが超安定", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
-        { id: 'C', name: "C社 (中国メーカー)", baseCost: 9.5, currentCost: 9.5, risk: 10, defectRate: 10, desc: "バランス型", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
-        { id: 'D', name: "D社 (黒船)", baseCost: 8.0, currentCost: 8.0, risk: 5, defectRate: 5, desc: "【新規】低不良品率・低価格", allocation: 0, hidden: true, disabled: false, isPriceDrop: false }
+        { id: 'A', name: "A社 (インドメーカー)", baseCost: 7.5, currentCost: 7.5, risk: 25, defectRate: 20, desc: "低コストだが納期遅延リスク高", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'B', name: "B社 (国内大手メーカー)", baseCost: 12.5, currentCost: 12.5, risk: 2, defectRate: 1, desc: "高コストだが超安定", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'C', name: "C社 (中国メーカー)", baseCost: 10.0, currentCost: 10.0, risk: 10, defectRate: 10, desc: "バランス型", allocation: 0, hidden: false, disabled: false, isPriceDrop: false },
+        { id: 'D', name: "D社 (黒船)", baseCost: 8.5, currentCost: 8.5, risk: 5, defectRate: 5, desc: "【新規】低不良品率・低価格", allocation: 0, hidden: true, disabled: false, isPriceDrop: false }
     ];
 
     let state = {
@@ -587,17 +587,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 let lost = Math.floor(orderQty * 0.5); // 影響度を50%で固定化
                 if (lost === 0 && orderQty > 0) lost = 1; // 少なくとも1つはロス
                 delivered -= lost;
-                trouble.push(`<span style="color:#e74c3c">納期遅延(50%減):-${lost}個</span>`);
-                weightedReputationDamage += 10;
+                trouble.push(`<span style="color:#e74c3c">納期遅延(50%未納):-${lost}個</span>`);
+                weightedReputationDamage += 15;
             }
 
             // 不良品判定 (発生した場合は納品数の20%が不良品になる)
             let defects = 0;
             if (Math.random() * 100 < s.defectRate) {
                 defects = Math.ceil(delivered * 0.2); // 影響度を20%で固定化
-                totalPenalty += defects * 3; 
+                totalPenalty += defects * 5; 
                 trouble.push(`<span style="color:#e67e22">不良品(20%混入):${defects}個</span>`);
-                weightedReputationDamage += 5;
+                weightedReputationDamage += (defects * 0.5);
             }
 
             deliveredTotal += Math.max(0, delivered - defects);
@@ -611,10 +611,13 @@ document.addEventListener('DOMContentLoaded', function() {
         let salesUnits = Math.min(deliveredTotal, state.currentDemand);
         let revenue = salesUnits * state.unitPrice;
         
+        let missPenalty = 0;
         if (salesUnits < state.currentDemand) {
             let miss = state.currentDemand - salesUnits;
-            logDetails += `<div style="color:#e74c3c; font-weight:bold;">⚠ 欠品: ${miss}個 (機会損失)</div>`;
-            weightedReputationDamage += (miss * 0.2);
+            missPenalty = miss * 4; 
+            totalPenalty += missPenalty;
+            logDetails += `<div style="color:#e74c3c; font-weight:bold;">⚠ 欠品: ${miss}個 (緊急手配コスト -${missPenalty}万円)</div>`;
+            weightedReputationDamage += (miss * 0.5);
         }
 
         let profit = revenue - totalCost - totalPenalty - FIXED_COST;
